@@ -1,2 +1,2 @@
 # PlexMonitor
-A Firfox plugin that shows various information about your Plex server.
+A Firefox plugin that shows various information about your Plex server.
