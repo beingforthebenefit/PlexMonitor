@@ -4,8 +4,8 @@ function save_options() {
     var plexToken = document.getElementById('plexToken').value;
     var moviesLibraryId = document.getElementById('moviesLibrary').value;
     var tvShowsLibraryId = document.getElementById('tvShowsLibrary').value;
-    var moviesLibraryName = document.getElementById('moviesLibrary').options[document.getElementById('moviesLibrary').selectedIndex].text;
-    var tvShowsLibraryName = document.getElementById('tvShowsLibrary').options[document.getElementById('tvShowsLibrary').selectedIndex].text;
+    var moviesLibraryName = document.getElementById('moviesLibrary').options[document.getElementById('moviesLibrary').selectedIndex]?.text;
+    var tvShowsLibraryName = document.getElementById('tvShowsLibrary').options[document.getElementById('tvShowsLibrary').selectedIndex]?.text;
 
     browser.storage.local.set({
         plexUrl: plexUrl,
