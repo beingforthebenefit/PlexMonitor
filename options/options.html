@@ -1,49 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Options</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 10px;
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        #options-form {
-            display: grid;
-            gap: 10px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        label, input {
-            padding: 10px;
-        }
-
-        input[type="submit"] {
-            background: #4CAF50;
-            border: none;
-            color: white;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background: #45a049;
-        }
-
-        #status {
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="options.css">
     <script>
         window.addEventListener('DOMContentLoaded', (event) => {
-            document.getElementById('options-form').addEventListener('submit', function(e) {
+            document.getElementById('options-form').addEventListener('submit', function (e) {
                 e.preventDefault();
 
                 var url = document.getElementById('plexUrl').value;
@@ -68,18 +31,37 @@
         });
     </script>
 </head>
+
 <body>
     <h1>Settings</h1>
-    <form id="options-form">
-        <label for="plexUrl">Plex Server URL:</label>
-        <input type="url" id="plexUrl" name="plexUrl" required>
-        <label for="plexToken">Plex Token:</label>
-        <input type="text" id="plexToken" name="plexToken" required>
-        <input type="submit" value="Save">
-    </form>
 
-    <div id="status"></div>
+    <h2>Current Library Selections</h2>
+    <p id="currentMoviesLibrary"></p>
+    <p id="currentTvShowsLibrary"></p>
+
+
+    <form id="options-form">
+        <label for="plexUrl">Plex Server URL:</label><br>
+        <input type="text" id="plexUrl" name="plexUrl"><br>
+        <label for="plexToken">Plex Token:</label><br>
+        <input type="text" id="plexToken" name="plexToken"><br>
+
+        <h2>List Libraries</h2>
+        <button id="listLibraries">List Libraries</button>
+
+        <h2>Select Libraries</h2>
+        <label for="moviesLibrary">Movies Library:</label>
+        <select id="moviesLibrary" name="moviesLibrary"></select>
+
+        <label for="tvShowsLibrary">TV Shows Library:</label>
+        <select id="tvShowsLibrary" name="tvShowsLibrary"></select>
+
+        <input type="submit" value="Save">
+        <div id="status"></div>
+    </form>
 
     <script src="options.js"></script>
 </body>
+</html>
+
 </html>
