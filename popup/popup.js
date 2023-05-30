@@ -76,7 +76,6 @@ function fetchTVShows(serverUrl, plexToken, tvShowsLibraryId) {
                     .then(response => response.text())
                     .then(data => {
                         let seasonXmlDoc = parser.parseFromString(data, "text/xml");
-                        console.log('seasonXML', seasonXmlDoc)
                         let episodes = seasonXmlDoc.getElementsByTagName("MediaContainer");
                         episodeCount += Number(episodes[0].getAttribute('totalSize'));
                     })
