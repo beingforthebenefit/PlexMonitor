@@ -2,14 +2,79 @@
 <html>
 <head>
     <title>Options</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #options-form {
+            display: grid;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        label, input {
+            padding: 10px;
+        }
+
+        input[type="submit"] {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background: #45a049;
+        }
+
+        #status {
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('options-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var url = document.getElementById('plexUrl').value;
+                var token = document.getElementById('plexToken').value;
+
+                // Validate the URL
+                var urlPattern = /^(http|https):\/\/[a-zA-Z0-9-\.]+\.[a-z]{2,4}/;
+                if (!urlPattern.test(url)) {
+                    document.getElementById('status').textContent = 'Invalid URL';
+                    return;
+                }
+
+                // Validate the token
+                if (token === '') {
+                    document.getElementById('status').textContent = 'Token is required';
+                    return;
+                }
+
+                // If everything is valid, show a success message
+                document.getElementById('status').textContent = 'Settings saved successfully!';
+            });
+        });
+    </script>
 </head>
 <body>
     <h1>Settings</h1>
     <form id="options-form">
-        <label for="plexUrl">Plex Server URL:</label><br>
-        <input type="text" id="plexUrl" name="plexUrl"><br>
-        <label for="plexToken">Plex Token:</label><br>
-        <input type="text" id="plexToken" name="plexToken"><br>
+        <label for="plexUrl">Plex Server URL:</label>
+        <input type="url" id="plexUrl" name="plexUrl" required>
+        <label for="plexToken">Plex Token:</label>
+        <input type="text" id="plexToken" name="plexToken" required>
         <input type="submit" value="Save">
     </form>
 
