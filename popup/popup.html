@@ -1,7 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
     <title>Plex Stats</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: #f8f8f8;
+            padding: 20px;
+        }
+        h1 {
+            color: #444;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #666;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        p, .stream {
+            background-color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        .stream {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+
+        .stream-info td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .stream-info:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        #activities {
+            margin-top: 30px;
+        }
+        .activity {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .activity-field {
+            flex-basis: 30%;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
     <script src="popup.js"></script>
 </head>
 <body>
