@@ -1,30 +1,34 @@
 // Fetch the Plex URL and token from storage
-browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount', 'moviesLibraryId', 'tvShowsLibraryId'], function (data) {
-    let plexUrl = data.plexUrl;
-    let plexToken = data.plexToken;
-    let moviesLibraryId = data.moviesLibraryId
-    let tvShowsLibraryId = data.tvShowsLibraryId
+loadData();
 
-    if (data.movieCount !== undefined) {
-        document.getElementById('movieCount').textContent = `${data.movieCount} (refreshing...)`;
-    }
-
-    if (data.tvShowCount !== undefined) {
-        document.getElementById('tvShowCount').textContent = `${data.tvShowCount} (refreshing...)`;
-    }
-
-    // Fetch the total number of movies
-    fetchMovies(plexUrl, plexToken, moviesLibraryId);
-
-    // Fetch the total number of TV shows
-    fetchTVShows(plexUrl, plexToken, tvShowsLibraryId);
-
-    // Fetch the current streams
-    fetchStreams(plexUrl, plexToken);
-
-    // Fetch the current Plex activities
-    fetchActivities(plexUrl, plexToken);
-});
+function loadData() {
+    browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount', 'moviesLibraryId', 'tvShowsLibraryId'], function (data) {
+        let plexUrl = data.plexUrl;
+        let plexToken = data.plexToken;
+        let moviesLibraryId = data.moviesLibraryId
+        let tvShowsLibraryId = data.tvShowsLibraryId
+    
+        if (data.movieCount !== undefined) {
+            document.getElementById('movieCount').textContent = `${data.movieCount} (refreshing...)`;
+        }
+    
+        if (data.tvShowCount !== undefined) {
+            document.getElementById('tvShowCount').textContent = `${data.tvShowCount} (refreshing...)`;
+        }
+    
+        // Fetch the total number of movies
+        fetchMovies(plexUrl, plexToken, moviesLibraryId);
+    
+        // Fetch the total number of TV shows
+        fetchTVShows(plexUrl, plexToken, tvShowsLibraryId);
+    
+        // Fetch the current streams
+        fetchStreams(plexUrl, plexToken);
+    
+        // Fetch the current Plex activities
+        fetchActivities(plexUrl, plexToken);
+    });
+}
 
 function fetchMovies(serverUrl, plexToken, moviesLibraryId) {
     const url = `${serverUrl}/library/sections/${moviesLibraryId}/all?X-Plex-Token=${plexToken}`;
@@ -59,6 +63,7 @@ function fetchTVShows(serverUrl, plexToken, tvShowsLibraryId) {
             let tvShowCount = tvShows.length;
 
             let episodeCount = 0;
+            let promises = [];
 
             // Iterate through each TV show
             for (let i = 0; i < tvShows.length; i++) {
@@ -67,28 +72,103 @@ function fetchTVShows(serverUrl, plexToken, tvShowsLibraryId) {
 
                 // Fetch the metadata for the TV show season
                 let seasonUrl = `${serverUrl}/library/metadata/${tvShowSeasonId}/children?X-Plex-Token=${plexToken}&X-Plex-Container-Start=0&X-Plex-Container-Size=0`;
-                fetch(seasonUrl)
+                let promise = fetch(seasonUrl)
                     .then(response => response.text())
                     .then(data => {
                         let seasonXmlDoc = parser.parseFromString(data, "text/xml");
-                        let episodes = seasonXmlDoc.getElementsByTagName("Video");
-                        episodeCount += episodes.length;
-
-                        // Update the episode count on the UI
-                        let tvShowElement = document.getElementById('tvShowCount');
-                        tvShowElement.textContent = `${tvShowCount} TV Shows (${episodeCount} episodes)`;
+                        console.log('seasonXML', seasonXmlDoc)
+                        let episodes = seasonXmlDoc.getElementsByTagName("MediaContainer");
+                        console.log('episodes', episodes)
+                        episodeCount += episodes.totalSize;
                     })
                     .catch(error => console.error('Error fetching season data:', error));
+
+                promises.push(promise);
             }
 
-            // Update the TV show count on the UI
-            let tvShowElement = document.getElementById('tvShowCount');
-            tvShowElement.textContent = `${tvShowCount} TV Shows`;
+            // Wait for all promises to resolve
+            Promise.all(promises)
+                .then(() => {
+                    // Update the episode count on the UI
+                    let tvShowElement = document.getElementById('tvShowCount');
+                    tvShowElement.textContent = `${tvShowCount} TV Shows (${episodeCount} episodes)`;
+                })
+                .catch(error => console.error('Error:', error));
         })
         .catch(error => console.error('Error fetching TV shows:', error));
 }
 
+/// Populate the current streams table for movies
+function populateMoviesTable(movies) {
+    let moviesTable = document.getElementById('moviesTable');
 
+    // Clear out any existing rows
+    moviesTable.innerHTML = '';
+
+    // Create table headers for movies
+    let movieTableHeaders = ['User', 'Movie', 'Resolution', 'Device', 'State', 'Progress'];
+    let movieTableHeaderRow = document.createElement('tr');
+
+    for (let header of movieTableHeaders) {
+        let th = document.createElement('th');
+        th.textContent = header;
+        movieTableHeaderRow.appendChild(th);
+    }
+
+    moviesTable.appendChild(movieTableHeaderRow);
+
+    // Populate movie stream data
+    for (let movie of movies) {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+        <td>${movie.user}</td>
+        <td>${movie.title}</td>
+        <td>${movie.resolution}</td>
+        <td>${movie.device}</td>
+        <td>${movie.state}</td>
+        <td>${movie.progress}</td>
+      `;
+        moviesTable.appendChild(tr);
+    }
+}
+
+// Populate the current streams table for TV shows
+function populateTVShowsTable(tvShows) {
+    let tvShowsTable = document.getElementById('tvShowsTable');
+
+    // Clear out any existing rows
+    tvShowsTable.innerHTML = '';
+
+    // Create table headers for TV shows
+    let tvShowTableHeaders = ['User', 'TV Show', 'Season', 'Episode', 'Resolution', 'Device', 'State', 'Progress'];
+    let tvShowTableHeaderRow = document.createElement('tr');
+
+    for (let header of tvShowTableHeaders) {
+        let th = document.createElement('th');
+        th.textContent = header;
+        tvShowTableHeaderRow.appendChild(th);
+    }
+
+    tvShowsTable.appendChild(tvShowTableHeaderRow);
+
+    // Populate TV show stream data
+    for (let tvShow of tvShows) {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+        <td>${tvShow.user}</td>
+        <td>${tvShow.tvShow}</td>
+        <td>${tvShow.season}</td>
+        <td>${tvShow.episode}</td>
+        <td>${tvShow.resolution}</td>
+        <td>${tvShow.device}</td>
+        <td>${tvShow.state}</td>
+        <td>${tvShow.progress}</td>
+      `;
+        tvShowsTable.appendChild(tr);
+    }
+}
+
+// Fetch and process the current streams data
 function fetchStreams(serverUrl, plexToken) {
     const url = `${serverUrl}/status/sessions?X-Plex-Token=${plexToken}`;
 
@@ -96,85 +176,80 @@ function fetchStreams(serverUrl, plexToken) {
         .then(response => response.text())
         .then(data => {
             let parser = new DOMParser();
-            let xmlDoc = parser.parseFromString(data, "text/xml");
+            let xmlDoc = parser.parseFromString(data, 'text/xml');
 
-            let videos = xmlDoc.getElementsByTagName("Video");
+            let videos = xmlDoc.getElementsByTagName('Video');
+            let movies = [];
+            let tvShows = [];
 
-            let streamList = document.getElementById('streamList');
+            for (let video of videos) {
+                let user = video.getElementsByTagName('User')[0];
+                let player = video.getElementsByTagName('Player')[0];
 
-            // clear out any existing children of the streamList div
-            while (streamList.firstChild) {
-                streamList.removeChild(streamList.firstChild);
-            }
+                let userName = user.getAttribute('title');
+                let movieTitle = video.getAttribute('title');
+                let movieDuration = video.getAttribute('duration');
+                let progress = video.getAttribute('viewOffset');
 
-            if (videos.length === 0) {
-                // No streams, show a message
-                streamList.textContent = 'No current streams';
-            } else {
-                // Create a table
-                let streamTable = document.createElement('table');
-                streamList.appendChild(streamTable);
-
-                // Create table header
-                let headers = ['User', 'Movie', 'Resolution', 'Device', 'State', 'Progress'];
-                let thead = streamTable.createTHead();
-                let headerRow = thead.insertRow();
-                for (let header of headers) {
-                    let th = document.createElement('th');
-                    th.textContent = header;
-                    headerRow.appendChild(th);
+                let streamResolution;
+                let media = video.getElementsByTagName('Media')[0];
+                if (media) {
+                    streamResolution = media.getAttribute('videoResolution');
                 }
 
-                // Populate the table with rows for each video stream
-                for (let i = 0; i < videos.length; i++) {
-                    let video = videos[i];
+                let playerDevice = player.getAttribute('device');
 
-                    let user = video.getElementsByTagName("User")[0];
-                    let player = video.getElementsByTagName("Player")[0];
+                let streamState = player.getAttribute('state');
 
-                    let userName = user.getAttribute('title');
-                    let movieTitle = video.getAttribute('title');
-                    let movieDuration = video.getAttribute('duration');
-                    let progress = video.getAttribute('viewOffset');
+                // Extract TV show, season, and episode information
+                let tvShow = '';
+                let season = '';
+                let episode = '';
 
-                    let streamResolution;
-                    let media = video.getElementsByTagName("Media")[0];
-                    if (media) {
-                        streamResolution = media.getAttribute('videoResolution');
-                    }
+                let parentTitle = video.getAttribute('parentTitle');
+                let grandparentTitle = video.getAttribute('grandparentTitle');
+                let index = video.getAttribute('index');
 
-                    let playerDevice = player.getAttribute('device');
-                    let streamState = player.getAttribute('state');
+                if (parentTitle && grandparentTitle && index) {
+                    tvShow = grandparentTitle;
+                    season = parentTitle;
+                    episode = `Episode ${index}`;
+                }
 
-                    // create a new row for this stream
-                    let row = streamTable.insertRow();
-                    let cell;
+                let stream = {
+                    user: userName,
+                    tvShow: tvShow,
+                    season: season,
+                    episode: episode,
+                    resolution: streamResolution,
+                    device: playerDevice,
+                    state: streamState,
+                    progress: `${(progress / movieDuration * 100).toFixed(2)}%`,
+                };
 
-                    cell = row.insertCell();
-                    cell.textContent = userName;
-
-                    cell = row.insertCell();
-                    cell.textContent = movieTitle;
-
-                    cell = row.insertCell();
-                    cell.textContent = streamResolution;
-
-                    cell = row.insertCell();
-                    cell.textContent = playerDevice;
-
-                    cell = row.insertCell();
-                    cell.textContent = streamState;
-
-                    cell = row.insertCell();
-                    cell.textContent = `${(progress / movieDuration * 100).toFixed(2)}%`;
+                // Categorize streams as movies or TV shows
+                if (tvShow) {
+                    tvShows.push(stream);
+                } else {
+                    movies.push({
+                        user: stream.user,
+                        title: movieTitle,
+                        resolution: stream.resolution,
+                        device: stream.device,
+                        state: stream.state,
+                        progress: stream.progress,
+                    });
                 }
             }
+
+            // Populate the Current Streams table for movies
+            populateMoviesTable(movies);
+
+            // Populate the Current Streams table for TV shows
+            populateTVShowsTable(tvShows);
         })
         .catch(error => console.error('Error:', error));
 }
-
-
-
 
 function fetchActivities(serverUrl, plexToken) {
     const url = `${serverUrl}/activities?X-Plex-Token=${plexToken}`;
@@ -250,3 +325,10 @@ function fetchActivities(serverUrl, plexToken) {
         })
         .catch(error => console.error('Error:', error));
 }
+
+document.getElementById('refreshLink').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent the link from navigating
+  
+    // Perform the refresh action here
+    loadData();
+});
