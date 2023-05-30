@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta http-equiv="content-type" content="text/html; charset=windows-1252">
     <title>Plex Stats</title>
@@ -10,24 +11,29 @@
             background-color: #f8f8f8;
             padding: 20px;
         }
+
         h1 {
             color: #444;
             border-bottom: 1px solid #ddd;
             padding-bottom: 10px;
         }
+
         h2 {
             color: #666;
             margin-top: 20px;
             display: inline-block;
         }
-        p, .stream {
+
+        p,
+        .stream {
             background-color: #fff;
             padding: 10px 15px;
             border-radius: 5px;
             margin-top: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             display: inline-block;
         }
+
         .stream {
             width: 100%;
             margin-bottom: 20px;
@@ -44,9 +50,11 @@
         .stream-info:nth-child(even) {
             background-color: #f2f2f2;
         }
+
         #activities {
             margin-top: 30px;
         }
+
         .activity {
             display: flex;
             flex-direction: row;
@@ -61,12 +69,14 @@
             flex-basis: 30%;
             margin: 5px 0;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
@@ -75,9 +85,50 @@
         th {
             background-color: #f2f2f2;
         }
+
+        .settings-link {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .settings-link:hover {
+            color: #666;
+        }
+        .settings-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        .refresh-link {
+            position: absolute;
+            top: 10px;
+            right: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .refresh-link:hover {
+            color: #666;
+        }
+        .refresh-icon {
+            position: absolute;
+            top: 10px;
+            right: 30px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
     </style>
     <script src="popup.js"></script>
 </head>
+
 <body>
     <h1>Plex Server Stats</h1>
     <div id="movies">
@@ -90,11 +141,28 @@
     </div>
     <div id="streams">
         <h2>Current Streams</h2>
-        <div id="streamList">Loading...</div>
+        <section id="moviesSection">
+            <h4>Movies</h4>
+            <table id="moviesTable">
+            </table>
+        </section>
+
+        <section id="tvShowsSection">
+            <h4>TV Shows</h4>
+            <table id="tvShowsTable">
+            </table>
+        </section>
     </div>
     <div id="activities">
         <h2>Plex Activities</h2>
         <div id="activityList">Loading...</div>
     </div>
+    <a href="#" id="refreshLink" class="refresh-link">
+        <img src="../assets/refresh.png" alt="Refresh" class="refresh-icon">
+    </a>      
+    <a class="settings-link" href="../options/options.html" target="_blank">
+        <img src="../assets/cog.png" alt="Settings" class="settings-icon">
+    </a>
 </body>
+
 </html>
