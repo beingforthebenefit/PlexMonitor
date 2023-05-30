@@ -48,10 +48,7 @@ function fetchMovies(serverUrl, plexToken) {
 }
 
 function fetchTVShows(serverUrl, plexToken) {
-    // Get the library ID for TV Shows
-    let tvShowsLibraryId = 2
-
-    const url = `${serverUrl}/library/sections/${tvShowsLibraryId}/all?X-Plex-Token=${plexToken}`;
+    const url = `${serverUrl}/library/sections/2/all?X-Plex-Token=${plexToken}`;
 
     fetch(url)
         .then(response => response.text())
@@ -59,16 +56,39 @@ function fetchTVShows(serverUrl, plexToken) {
             let parser = new DOMParser();
             let xmlDoc = parser.parseFromString(data, "text/xml");
 
-            let tvShowCount = xmlDoc.getElementsByTagName('Video').length;
+            let tvShows = xmlDoc.getElementsByTagName("Directory");
+            let tvShowCount = tvShows.length;
 
-            // Store the TV show count in local storage
-            browser.storage.local.set({ tvShowCount });
+            let episodeCount = 0;
 
-            // Update the UI
-            document.getElementById('tvShowCount').textContent = `${tvShowCount}`;
+            // Iterate through each TV show
+            for (let i = 0; i < tvShows.length; i++) {
+                let tvShow = tvShows[i];
+                let tvShowSeasonId = tvShow.getAttribute('ratingKey');
+
+                // Fetch the metadata for the TV show season
+                let seasonUrl = `${serverUrl}/library/metadata/${tvShowSeasonId}/children?X-Plex-Token=${plexToken}&X-Plex-Container-Start=0&X-Plex-Container-Size=0`;
+                fetch(seasonUrl)
+                    .then(response => response.text())
+                    .then(data => {
+                        let seasonXmlDoc = parser.parseFromString(data, "text/xml");
+                        let episodes = seasonXmlDoc.getElementsByTagName("Video");
+                        episodeCount += episodes.length;
+
+                        // Update the episode count on the UI
+                        let tvShowElement = document.getElementById('tvShowCount');
+                        tvShowElement.textContent = `${tvShowCount} TV Shows (${episodeCount} episodes)`;
+                    })
+                    .catch(error => console.error('Error fetching season data:', error));
+            }
+
+            // Update the TV show count on the UI
+            let tvShowElement = document.getElementById('tvShowCount');
+            tvShowElement.textContent = `${tvShowCount} TV Shows`;
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error fetching TV shows:', error));
 }
+
 
 function fetchStreams(serverUrl, plexToken) {
     const url = `${serverUrl}/status/sessions?X-Plex-Token=${plexToken}`;
@@ -79,7 +99,7 @@ function fetchStreams(serverUrl, plexToken) {
             let parser = new DOMParser();
             let xmlDoc = parser.parseFromString(data, "text/xml");
 
-            let streams = xmlDoc.getElementsByTagName('Stream');
+            let videos = xmlDoc.getElementsByTagName("Video");
 
             let streamList = document.getElementById('streamList');
 
@@ -88,28 +108,72 @@ function fetchStreams(serverUrl, plexToken) {
                 streamList.removeChild(streamList.firstChild);
             }
 
-            if (streams.length === 0) {
+            if (videos.length === 0) {
                 // No streams, show a message
                 streamList.textContent = 'No current streams';
             } else {
-                // Populate the stream list
-                for (let stream of streams) {
-                    let streamElement = document.createElement('div');
-                    streamElement.className = 'stream';
+                // Create a table
+                let streamTable = document.createElement('table');
+                streamList.appendChild(streamTable);
 
-                    // populate streamElement with stream data...
-                    let id = stream.getAttribute('id');
-                    let title = stream.getAttribute('title');
-                    let type = stream.getAttribute('type');
+                // Create table header
+                let headers = ['User', 'Movie', 'Resolution', 'Device', 'State', 'Progress'];
+                let thead = streamTable.createTHead();
+                let headerRow = thead.insertRow();
+                for (let header of headers) {
+                    let th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                }
 
-                    streamElement.textContent = `ID: ${id}, Title: ${title}, Type: ${type}`;
+                // Populate the table with rows for each video stream
+                for (let i = 0; i < videos.length; i++) {
+                    let video = videos[i];
 
-                    streamList.appendChild(streamElement);
+                    let user = video.getElementsByTagName("User")[0];
+                    let player = video.getElementsByTagName("Player")[0];
+
+                    let userName = user.getAttribute('title');
+                    let movieTitle = video.getAttribute('title');
+                    let movieDuration = video.getAttribute('duration');
+                    let progress = video.getAttribute('viewOffset');
+
+                    let streamResolution;
+                    let media = video.getElementsByTagName("Media")[0];
+                    if (media) {
+                        streamResolution = media.getAttribute('videoResolution');
+                    }
+
+                    let playerDevice = player.getAttribute('device');
+                    let streamState = player.getAttribute('state');
+
+                    // create a new row for this stream
+                    let row = streamTable.insertRow();
+                    let cell;
+
+                    cell = row.insertCell();
+                    cell.textContent = userName;
+
+                    cell = row.insertCell();
+                    cell.textContent = movieTitle;
+
+                    cell = row.insertCell();
+                    cell.textContent = streamResolution;
+
+                    cell = row.insertCell();
+                    cell.textContent = playerDevice;
+
+                    cell = row.insertCell();
+                    cell.textContent = streamState;
+
+                    cell = row.insertCell();
+                    cell.textContent = `${(progress / movieDuration * 100).toFixed(2)}%`;
                 }
             }
         })
         .catch(error => console.error('Error:', error));
 }
+
 
 
 
@@ -134,7 +198,21 @@ function fetchActivities(serverUrl, plexToken) {
                 // No activities, show a message
                 activityList.textContent = 'No current activities';
             } else {
-                // Populate the activity list
+                // Create a table
+                let activityTable = document.createElement('table');
+                activityList.appendChild(activityTable);
+
+                // Create table header
+                let headers = ['UUID', 'Type', 'Cancellable', 'User ID', 'Title', 'Subtitle', 'Progress'];
+                let thead = activityTable.createTHead();
+                let headerRow = thead.insertRow();
+                for (let header of headers) {
+                    let th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                }
+
+                // Populate the table with rows for each activity
                 for (let activity of activities) {
                     let uuid = activity.getAttribute('uuid');
                     let type = activity.getAttribute('type');
@@ -144,22 +222,30 @@ function fetchActivities(serverUrl, plexToken) {
                     let subtitle = activity.getAttribute('subtitle');
                     let progress = activity.getAttribute('progress');
 
-                    // create an HTML element for this activity
-                    let activityElement = document.createElement('div');
-                    activityElement.className = 'activity';
+                    // create a new row for this activity
+                    let row = activityTable.insertRow();
+                    let cell;
 
-                    // create HTML elements for each piece of activity data and append them to the activity element
-                    activityElement.innerHTML = `
-                        <p>Activity UUID: ${uuid}</p>
-                        <p>Type: ${type}</p>
-                        <p>Cancellable: ${cancellable}</p>
-                        <p>User ID: ${userID}</p>
-                        <p>Title: ${title}</p>
-                        <p>Subtitle: ${subtitle}</p>
-                        <p>Progress: ${progress}%</p>
-                    `;
+                    cell = row.insertCell();
+                    cell.textContent = uuid;
 
-                    activityList.appendChild(activityElement);
+                    cell = row.insertCell();
+                    cell.textContent = type;
+
+                    cell = row.insertCell();
+                    cell.textContent = cancellable;
+
+                    cell = row.insertCell();
+                    cell.textContent = userID;
+
+                    cell = row.insertCell();
+                    cell.textContent = title;
+
+                    cell = row.insertCell();
+                    cell.textContent = subtitle;
+
+                    cell = row.insertCell();
+                    cell.textContent = `${progress}%`;
                 }
             }
         })
