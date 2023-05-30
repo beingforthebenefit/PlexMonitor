@@ -2,7 +2,7 @@
 loadData();
 
 function loadData() {
-    browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount', 'moviesLibraryId', 'tvShowsLibraryId'], function (data) {
+    browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount', 'episodeCount', 'moviesLibraryId', 'tvShowsLibraryId'], function (data) {
         let plexUrl = data.plexUrl;
         let plexToken = data.plexToken;
         let moviesLibraryId = data.moviesLibraryId
@@ -13,7 +13,7 @@ function loadData() {
         }
     
         if (data.tvShowCount !== undefined) {
-            document.getElementById('tvShowCount').textContent = `${data.tvShowCount} (refreshing...)`;
+            document.getElementById('tvShowCount').textContent = `${data.tvShowCount} TV Shows (${data.episodeCount} episodes) (refreshing...)`;
         }
     
         // Fetch the total number of movies
@@ -90,6 +90,10 @@ function fetchTVShows(serverUrl, plexToken, tvShowsLibraryId) {
                 .then(() => {
                     // Update the episode count on the UI
                     let tvShowElement = document.getElementById('tvShowCount');
+
+                    // Store TV Show count and episode count in local storage
+                    browser.storage.local.set({ tvShowCount, episodeCount });
+
                     tvShowElement.textContent = `${tvShowCount} TV Shows (${episodeCount} episodes)`;
                 })
                 .catch(error => console.error('Error:', error));
