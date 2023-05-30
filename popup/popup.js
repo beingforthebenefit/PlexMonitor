@@ -1,7 +1,9 @@
 // Fetch the Plex URL and token from storage
-browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount'], function (data) {
+browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount', 'moviesLibraryId', 'tvShowsLibraryId'], function (data) {
     let plexUrl = data.plexUrl;
     let plexToken = data.plexToken;
+    let moviesLibraryId = data.moviesLibraryId
+    let tvShowsLibraryId = data.tvShowsLibraryId
 
     if (data.movieCount !== undefined) {
         document.getElementById('movieCount').textContent = `${data.movieCount} (refreshing...)`;
@@ -12,10 +14,10 @@ browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount'],
     }
 
     // Fetch the total number of movies
-    fetchMovies(plexUrl, plexToken);
+    fetchMovies(plexUrl, plexToken, moviesLibraryId);
 
     // Fetch the total number of TV shows
-    fetchTVShows(plexUrl, plexToken);
+    fetchTVShows(plexUrl, plexToken, tvShowsLibraryId);
 
     // Fetch the current streams
     fetchStreams(plexUrl, plexToken);
@@ -24,10 +26,7 @@ browser.storage.local.get(['plexUrl', 'plexToken', 'movieCount', 'tvShowCount'],
     fetchActivities(plexUrl, plexToken);
 });
 
-function fetchMovies(serverUrl, plexToken) {
-    // Get the library ID for Movies
-    let moviesLibraryId = 1
-
+function fetchMovies(serverUrl, plexToken, moviesLibraryId) {
     const url = `${serverUrl}/library/sections/${moviesLibraryId}/all?X-Plex-Token=${plexToken}`;
 
     fetch(url)
@@ -47,8 +46,8 @@ function fetchMovies(serverUrl, plexToken) {
         .catch(error => console.error('Error:', error));
 }
 
-function fetchTVShows(serverUrl, plexToken) {
-    const url = `${serverUrl}/library/sections/2/all?X-Plex-Token=${plexToken}`;
+function fetchTVShows(serverUrl, plexToken, tvShowsLibraryId) {
+    const url = `${serverUrl}/library/sections/${tvShowsLibraryId}/all?X-Plex-Token=${plexToken}`;
 
     fetch(url)
         .then(response => response.text())
