@@ -1,6 +1,6 @@
 # Plex Server Stats Firefox Extension
 
-![Plex Server Stats Logo](./assets/plex-icon.png)
+<img src="./assets/plex-icon.png" width="200px" height="200px" alt="Plex Server Stats Logo">
 
 ## Description
 The Plex Server Stats Firefox Extension provides a convenient way to monitor the status of your Plex Media Server right from your Firefox browser toolbar. It displays real-time information about the current streams, activities, and library statistics.
@@ -20,7 +20,7 @@ After installing the extension, you'll see a new icon in your Firefox toolbar re
 To customize the extension, click on the cog icon in the upper-right corner of the popup. This will take you to the settings page where you can select your preferred movies and TV shows libraries.
 
 ## Feedback and Support
-If you encounter any issues or have suggestions for improvement, please feel free to open an issue on the [GitHub repository](https://github.com/your-username/plex-server-stats).
+If you encounter any issues or have suggestions for improvement, please feel free to open an issue on the [GitHub repository](https://github.com/beingforthebenefit/PlexMonitor).
 
 ## Contributions
 Contributions are welcome! If you'd like to contribute to the project, please follow the guidelines outlined in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
@@ -33,4 +33,4 @@ Special thanks to the Mozilla team for including this extension in the Mozilla a
 
 ## Screenshots
 ![Popup Window](./screenshots/popup.png)
-![Options Page](./screenshots/options.png)
+![Options Page](./screenshots/settings.png)
