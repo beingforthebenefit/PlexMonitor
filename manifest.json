@@ -4,13 +4,6 @@
     "description": "Displays information about a Plex Media Server",
     "version": "1.0",
     "permissions": ["<all_urls>", "storage"],
-
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["scripts/content.js"]
-      }
-    ],
     "options_ui": {
       "page": "options/options.html",
       "open_in_tab": true
@@ -20,8 +13,8 @@
     },
     "browser_specific_settings": {
       "gecko": {
-        "id": "extensionname@example.org",
+        "id": "PlexMonitor@gtodd.dev",
         "strict_min_version": "88.0"
       }
     }
-} 
+}
